@@ -4,7 +4,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
 
-  this.startTiles     = 2;
+  this.startTiles     = "A";
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -12,6 +12,39 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.setup();
 }
+
+
+function getRandomArbitrary(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function getRandomWord() {
+  return words[Math.floor(Math.random() * (words.length))];
+}
+
+
+function api_test(url, type, data, callback) {
+  $.ajax(
+    {
+      url: url,
+      type: type,
+      processData: false,
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(data),
+      dataType: 'json',
+      async: false,
+      complete: function (result) {
+        if (result.status == 0) {
+          ok(false, '0 status - browser could be on offline mode');
+        } else if (result.status == 404) {
+          ok(false, '404 error');
+        } else {
+          callback($.parseJSON(result.responseText));
+        }
+      }
+    });
+}
+
 
 // Restart the game
 GameManager.prototype.restart = function () {
@@ -60,18 +93,20 @@ GameManager.prototype.setup = function () {
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
-  for (var i = 0; i < this.startTiles; i++) {
     this.addRandomTile();
-  }
 };
 
 // Adds a tile in a random position
 GameManager.prototype.addRandomTile = function () {
   if (this.grid.cellsAvailable()) {
-    var value = Math.random() < 0.9 ? 2 : 4;
-    var tile = new Tile(this.grid.randomAvailableCell(), value);
+    var howmany = getRandomArbitrary(1,1);
+    var count;
+    for (count = 0; count <= howmany; count++) {
+      var word = getRandomWord()
+      var tile = new Tile(this.grid.randomAvailableCell(), word);
 
-    this.grid.insertTile(tile);
+      this.grid.insertTile(tile);
+    }
   }
 };
 
@@ -148,34 +183,49 @@ GameManager.prototype.move = function (direction) {
       cell = { x: x, y: y };
       tile = self.grid.cellContent(cell);
 
-      if (tile) {
+  if (tile) {
+    var positions = self.findFarthestPosition(cell, vector);
+
+    self.moveTile(tile, positions.farthest);
+     var next = self.grid.cellContent(positions.next);
+     if (next && !next.mergedFrom) {
         var positions = self.findFarthestPosition(cell, vector);
         var next      = self.grid.cellContent(positions.next);
+        var result = api_test(
+          "api/v1.0/words",
+          "POST",
+          {'data': {'words': [next.value, tile.value]}},
+          function(result) {
 
-        // Only one merger per row traversal?
-        if (next && next.value === tile.value && !next.mergedFrom) {
-          var merged = new Tile(positions.next, tile.value * 2);
-          merged.mergedFrom = [tile, next];
+            var result = result.data;
+            if (next) {
+              var merged = new Tile(positions.next, result);
+              merged.mergedFrom = [tile, next];
+              self.grid.insertTile(merged);
+              self.grid.removeTile(tile);
 
-          self.grid.insertTile(merged);
-          self.grid.removeTile(tile);
+              // Converge the two tiles' positions
+              tile.updatePosition(positions.next);
 
-          // Converge the two tiles' positions
-          tile.updatePosition(positions.next);
+              // Update the score
+              self.score = getRandomWord();
 
-          // Update the score
-          self.score += merged.value;
-
-          // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
-        } else {
-          self.moveTile(tile, positions.farthest);
-        }
-
-        if (!self.positionsEqual(cell, tile)) {
-          moved = true; // The tile moved from its original cell!
-        }
+              // The mighty 2048 tile
+              if (merged.value === "apple") self.won = true;
+            } else {
+              self.moveTile(tile, positions.farthest);
+            }
+          }
+        );
       }
+    if (!self.positionsEqual(cell, tile)) {
+      moved = true; // The tile moved from its original cell!
+    }
+    }
+
+
+
+
     });
   });
 
