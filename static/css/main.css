@@ -90,7 +90,7 @@ h1.title {
     animation-fill-mode: both; }
 
 .score-container:after {
-  content: "Score"; }
+  content: "Target Word"; }
 
 .best-container:after {
   content: "Best"; }

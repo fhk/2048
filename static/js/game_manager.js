@@ -78,7 +78,7 @@ GameManager.prototype.setup = function () {
     this.keepPlaying = previousState.keepPlaying;
   } else {
     this.grid        = new Grid(this.size);
-    this.score       = 0;
+    this.score       = getRandomWord();;
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
@@ -207,11 +207,8 @@ GameManager.prototype.move = function (direction) {
               // Converge the two tiles' positions
               tile.updatePosition(positions.next);
 
-              // Update the score
-              self.score = getRandomWord();
-
               // The mighty 2048 tile
-              if (merged.value === "apple") self.won = true;
+              if (merged.value === self.score) self.won = true;
             } else {
               self.moveTile(tile, positions.farthest);
             }
