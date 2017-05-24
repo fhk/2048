@@ -1,11 +1,21 @@
+import pickle
+
 from flask import Flask, send_file, jsonify, abort, request
 
-import gensim
 import numpy as np
+import scipy.spatial
+
+from words import nouns
 
 app = Flask(__name__)
 
 MODEL = None
+VECTORS = None
+
+
+def find_nearest(array,value):
+    idx = (np.abs(array-value)).argmin()
+    return array[idx], idx
 
 
 @app.route("/")
@@ -21,14 +31,17 @@ def create_word():
     data = request.json
     words = data['data']['words']
     if len(words) == 2:
-        result = MODEL.most_similar_cosmul(
-            positive=words, topn=5)
-        for i, r in enumerate(result):
-            if r[0] + 's' in words:
-                continue
-            else:
-                return jsonify({'data': result[i][0]}), 201
+        indx_0 = [i for i, n in enumerate(nouns) if n == words[0]]
+        indx_1 = [i for i, n in enumerate(nouns) if n == words[1]]
+
+        added_vec = np.add(VECTORS[0][indx_0], VECTORS[0][indx_1])
+
+        result = nouns[MODEL.query(added_vec[0])[1]]
+
+        return jsonify({'data': result}), 201
 
 if __name__ == '__main__':
-    MODEL = gensim.models.KeyedVectors.load_word2vec_format("../../Downloads/GoogleNews-vectors-negative300.bin.gz", binary=True)
+    with open('word_vecs.pkl', 'r') as in_pkl:
+        VECTORS = pickle.load(in_pkl)
+        MODEL = scipy.spatial.cKDTree(VECTORS[0], leafsize=100)
     app.run(debug=True, host="0.0.0.0")
