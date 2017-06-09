@@ -6,11 +6,9 @@ import numpy as np
 import scipy.spatial
 
 from words import nouns
+from app_vars import VECTORS, MODEL
 
 app = Flask(__name__)
-
-MODEL = None
-VECTORS = None
 
 
 def find_nearest(array,value):
@@ -23,13 +21,19 @@ def index():
     return send_file("templates/index.html")
 
 
-@app.route('/api/v1.0/words', methods=['POST'])
+@app.route("/words", methods=['POST'])
 def create_word():
-    if not request.json or not 'data' in request.json:
-        abort(400)
+    global VECTORS
+    global MODEL
+    if VECTORS is None:
+        with open('static/word_vecs.pkl', 'r') as in_pkl:
+            VECTORS = pickle.load(in_pkl)
+            MODEL = scipy.spatial.cKDTree(VECTORS[0], leafsize=100)
 
     data = request.json
+
     words = data['data']['words']
+
     if len(words) == 2:
         indx_0 = [i for i, n in enumerate(nouns) if n == words[0]]
         indx_1 = [i for i, n in enumerate(nouns) if n == words[1]]
@@ -38,10 +42,9 @@ def create_word():
 
         result = nouns[MODEL.query(added_vec[0])[1]]
 
+        print('working')
+
         return jsonify({'data': result}), 201
 
 if __name__ == '__main__':
-    with open('word_vecs.pkl', 'r') as in_pkl:
-        VECTORS = pickle.load(in_pkl)
-        MODEL = scipy.spatial.cKDTree(VECTORS[0], leafsize=100)
-    app.run(debug=True, host="0.0.0.0")
+    app.run(host='127.0.0.1', port=8080, debug=True)

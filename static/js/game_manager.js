@@ -182,23 +182,16 @@ GameManager.prototype.move = function (direction) {
     traversals.y.forEach(function (y) {
       cell = { x: x, y: y };
       tile = self.grid.cellContent(cell);
-
-  if (tile) {
-    var positions = self.findFarthestPosition(cell, vector);
-
-    self.moveTile(tile, positions.farthest);
-     var next = self.grid.cellContent(positions.next);
-     if (next && !next.mergedFrom) {
+      if (tile) {
         var positions = self.findFarthestPosition(cell, vector);
-        var next      = self.grid.cellContent(positions.next);
-        var result = api_test(
-          "api/v1.0/words",
-          "POST",
-          {'data': {'words': [next.value, tile.value]}},
-          function(result) {
-
-            var result = result.data;
-            if (next) {
+        var next = self.grid.cellContent(positions.next);
+        if (next && !next.mergedFrom) {
+          var result = api_test(
+            "words",
+            "POST",
+            {'data': {'words': [next.value, tile.value]}},
+            function(result) {
+              var result = result.data;
               var merged = new Tile(positions.next, result);
               merged.mergedFrom = [tile, next];
               self.grid.insertTile(merged);
@@ -208,21 +201,16 @@ GameManager.prototype.move = function (direction) {
               tile.updatePosition(positions.next);
 
               // The mighty 2048 tile
-              if (merged.value === self.score) self.won = true;
-            } else {
-              self.moveTile(tile, positions.farthest);
-            }
-          }
-        );
+          if (merged.value === self.score) self.won = true;
+          });
+        } else {
+          self.moveTile(tile, positions.farthest);
+        }
+
+        if (!self.positionsEqual(cell, tile)) {
+          moved = true; // The tile moved from its original cell!
+        }
       }
-    if (!self.positionsEqual(cell, tile)) {
-      moved = true; // The tile moved from its original cell!
-    }
-    }
-
-
-
-
     });
   });
 
