@@ -23,7 +23,6 @@
       <h1 class="title">WordVec Search</h1>
       <div class="scores-container">
         <div class="score-container">0</div>
-        <div class="best-container">0</div>
       </div>
     </div>
 
@@ -72,18 +71,21 @@
 
       </div>
     </div>
+    <p>
+    <strong class="important">What's all this Machine Learning Hype?</strong> This site is a demo of what can be done with word vectors. Ever wondered how words are related to each other? Google created <a href="https://opensource.googleblog.com/2013/08/learning-meaning-behind-words.html">word2vec</a>, this take a bunch of words and turns them into vectors. You can also download <a href="https://code.google.com/archive/p/word2vec/">pretrained vectors</a> that have been trained on large data sets, e.g. Google News. The well know example is <a href="http://p.migdal.pl/2017/01/06/king-man-woman-queen-why.html">turning king into queen</a> by using arithmatic king - man + woman = queen.
+    </p>
 
     <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. Tiles can always be merged along the horizontal and vertical axis. The resulting word is the sum of the word vectors of the two origional words, they <strong>merge into one!</strong>
     </p>
     <hr>
     <p>
-    <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
+    Created by <a href="hhttps://github.com/fhk" target="_blank">Fabion Kauker.</a>
+    Based on <a href="http://git.io/2048" target="_blank">2048 by Gabriele Cirulli</a>,
+    based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
     </p>
     <hr>
-    <p>
-    Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
-    </p>
+    <p>Thanks to Desi Quintans for <a href="http://www.desiquintans.com/nounlist">The Great Noun List</a>, and Sebastian Ruder for pointing me in the right direction on how to handle the large vector data and his excellent <a href="http://sebastianruder.com/word-embeddings-1/">blog</a>.
   </div>
   <script src="static/js/words.js"></script>
   <script src="static/js/bind_polyfill.js"></script>
